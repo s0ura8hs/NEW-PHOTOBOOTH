@@ -1,0 +1,393 @@
+/* Filter Wheel Styles */
+.filter-wheel-container {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+}
+
+/* Search Interface */
+.filter-search {
+  z-index: 110;
+}
+
+.filter-search .glass-panel {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 20px;
+  min-width: 250px;
+}
+
+.search-input {
+  flex: 1;
+  background: rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 20px;
+  padding: 8px 15px;
+  color: white;
+  font-size: 16px;
+  outline: none;
+  transition: all 0.3s ease;
+}
+
+.search-input::placeholder {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.search-input:focus {
+  background: rgba(255, 255, 255, 0.3);
+  border-color: rgba(255, 255, 255, 0.5);
+  box-shadow: 0 0 20px rgba(255, 255, 255, 0.2);
+}
+
+.search-icon {
+  font-size: 18px;
+  opacity: 0.7;
+}
+
+/* Main Filter Wheel */
+.filter-wheel {
+  position: relative;
+  width: 500px;
+  height: 500px;
+  cursor: grab;
+  user-select: none;
+  touch-action: none;
+}
+
+.filter-wheel:active {
+  cursor: grabbing;
+}
+
+/* Wheel Center */
+.wheel-center {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 120px;
+  height: 120px;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(20px);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  box-shadow: 
+    0 10px 30px rgba(0, 0, 0, 0.3),
+    inset 0 2px 0 rgba(255, 255, 255, 0.2);
+}
+
+.center-indicator {
+  text-align: center;
+  color: white;
+}
+
+.current-filter-name {
+  font-size: 14px;
+  font-weight: 700;
+  margin-bottom: 4px;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.filter-category {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  opacity: 0.8;
+  font-weight: 500;
+}
+
+/* Filter Items */
+.filter-item {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 60px;
+  height: 60px;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transform-origin: center center;
+}
+
+.filter-item:hover {
+  transform: scale(1.1) !important;
+}
+
+.filter-item.active {
+  z-index: 90 !important;
+}
+
+/* Filter Preview */
+.filter-preview {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  box-shadow: 
+    0 4px 15px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.filter-item.active .filter-preview {
+  border-color: rgba(255, 255, 255, 0.8);
+  box-shadow: 
+    0 8px 25px rgba(0, 0, 0, 0.4),
+    0 0 20px rgba(255, 255, 255, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3);
+}
+
+.filter-icon {
+  font-size: 24px;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.filter-item.active .filter-icon {
+  font-size: 32px;
+}
+
+/* Filter Name (only for active) */
+.filter-name {
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.8);
+  color: white;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+  margin-top: 8px;
+  white-space: nowrap;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+/* Particle Trail Effect */
+.particle-trail {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.particle {
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.8);
+  border-radius: 50%;
+  animation: particleMove 0.8s ease-out forwards;
+}
+
+@keyframes particleMove {
+  0% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(0.3) translateY(-20px);
+  }
+}
+
+/* Navigation Hints */
+.wheel-navigation-hints {
+  z-index: 110;
+}
+
+.wheel-navigation-hints .glass-panel {
+  padding: 10px 20px;
+  text-align: center;
+}
+
+.hint {
+  color: white;
+  font-size: 12px;
+  margin: 2px 0;
+  opacity: 0.8;
+}
+
+/* Category Sections */
+.category-sections {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 450px;
+  height: 450px;
+  pointer-events: none;
+  z-index: 5;
+}
+
+.category-section {
+  position: absolute;
+  top: -20px;
+  left: 50%;
+  transform-origin: 50% 240px;
+  width: 80px;
+  height: 40px;
+  cursor: pointer;
+  pointer-events: all;
+  transition: all 0.3s ease;
+}
+
+.category-section:hover {
+  transform: scale(1.1);
+}
+
+.category-label {
+  background: rgba(var(--category-color, 255, 255, 255), 0.2);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(var(--category-color, 255, 255, 255), 0.3);
+  border-radius: 20px;
+  padding: 8px 12px;
+  color: white;
+  font-size: 10px;
+  font-weight: 700;
+  text-align: center;
+  letter-spacing: 0.5px;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  transition: all 0.3s ease;
+}
+
+.category-section:hover .category-label {
+  background: rgba(var(--category-color, 255, 255, 255), 0.3);
+  border-color: rgba(var(--category-color, 255, 255, 255), 0.5);
+}
+
+/* Category Colors */
+:root {
+  --vintage-color: 222, 165, 132;
+  --digital-color: 64, 169, 225;
+  --artistic-color: 255, 107, 157;
+  --modern-color: 153, 50, 204;
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+  .filter-wheel {
+    width: 400px;
+    height: 400px;
+  }
+  
+  .wheel-center {
+    width: 100px;
+    height: 100px;
+  }
+  
+  .current-filter-name {
+    font-size: 12px;
+  }
+  
+  .filter-category {
+    font-size: 9px;
+  }
+  
+  .filter-item {
+    width: 50px;
+    height: 50px;
+  }
+  
+  .filter-icon {
+    font-size: 20px;
+  }
+  
+  .filter-item.active .filter-icon {
+    font-size: 26px;
+  }
+  
+  .category-sections {
+    width: 350px;
+    height: 350px;
+  }
+  
+  .category-section {
+    transform-origin: 50% 190px;
+  }
+}
+
+@media (max-width: 480px) {
+  .filter-wheel {
+    width: 300px;
+    height: 300px;
+  }
+  
+  .wheel-center {
+    width: 80px;
+    height: 80px;
+  }
+  
+  .current-filter-name {
+    font-size: 10px;
+  }
+  
+  .filter-category {
+    font-size: 8px;
+  }
+  
+  .filter-item {
+    width: 40px;
+    height: 40px;
+  }
+  
+  .filter-icon {
+    font-size: 16px;
+  }
+  
+  .filter-item.active .filter-icon {
+    font-size: 20px;
+  }
+  
+  .category-sections {
+    width: 250px;
+    height: 250px;
+  }
+  
+  .category-section {
+    transform-origin: 50% 140px;
+    width: 60px;
+    height: 30px;
+  }
+  
+  .category-label {
+    padding: 6px 8px;
+    font-size: 8px;
+  }
+  
+  .filter-search .glass-panel {
+    min-width: 200px;
+    padding: 8px 15px;
+  }
+  
+  .search-input {
+    font-size: 14px;
+  }
+}
+
+/* Smooth rotation animation */
+@keyframes wheelAutoRotate {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.filter-wheel.auto-rotating {
+  animation: wheelAutoRotate 60s linear infinite;
+}

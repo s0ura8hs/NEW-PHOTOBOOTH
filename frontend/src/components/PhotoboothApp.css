@@ -1,0 +1,192 @@
+/* Photobooth App Main Styles */
+.photobooth-app {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  background: #000;
+}
+
+/* Animated Background */
+.animated-background {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    45deg,
+    #FF1493,
+    #4169E1,
+    #9370DB,
+    #FFD700
+  );
+  background-size: 400% 400%;
+  animation: gradientShift 15s ease infinite;
+  opacity: 0.3;
+  z-index: -1;
+}
+
+@keyframes gradientShift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* Camera Section */
+.camera-section {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Filter Wheel Section */
+.filter-wheel-section {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 100;
+}
+
+/* Template Preview */
+.template-preview {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  width: 200px;
+  z-index: 50;
+}
+
+.template-preview .glass-panel {
+  padding: 15px;
+  text-align: center;
+}
+
+.template-preview h3 {
+  margin: 0 0 10px 0;
+  font-size: 14px;
+  color: white;
+}
+
+.mini-template {
+  width: 100%;
+  height: 120px;
+  border-radius: 8px;
+  overflow: hidden;
+  background: white;
+  position: relative;
+}
+
+.template-layout-mini {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  display: grid;
+}
+
+.template-layout-mini.classic-strip {
+  grid-template-rows: repeat(4, 1fr);
+  gap: 2px;
+}
+
+.template-layout-mini.scrapbook-grid {
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(2, 1fr);
+  gap: 2px;
+}
+
+.template-layout-mini.magazine-collage {
+  grid-template-columns: 2fr 1fr;
+  grid-template-rows: repeat(3, 1fr);
+  gap: 2px;
+}
+
+.template-layout-mini.polaroid-collection {
+  grid-template-columns: repeat(2, 1fr);
+  grid-template-rows: repeat(2, 1fr);
+  gap: 4px;
+  padding: 4px;
+}
+
+.photo-slot-mini {
+  background: #f0f0f0;
+  border-radius: 2px;
+  overflow: hidden;
+  position: relative;
+}
+
+.photo-slot-mini img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Glass Panel Base */
+.glass-panel {
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 
+    0 8px 32px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.glass-btn {
+  background: rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50px;
+  padding: 12px 20px;
+  color: white;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+}
+
+.glass-btn:hover {
+  background: rgba(255, 255, 255, 0.3);
+  border-color: rgba(255, 255, 255, 0.4);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 25px rgba(0, 0, 0, 0.3);
+}
+
+.glass-btn:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 15px rgba(0, 0, 0, 0.2);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .template-preview {
+    top: 10px;
+    right: 10px;
+    width: 150px;
+  }
+  
+  .filter-wheel-section {
+    bottom: 10px;
+  }
+  
+  .glass-panel {
+    padding: 15px;
+  }
+}
+
+@media (max-width: 480px) {
+  .template-preview {
+    width: 120px;
+  }
+  
+  .mini-template {
+    height: 80px;
+  }
+}
