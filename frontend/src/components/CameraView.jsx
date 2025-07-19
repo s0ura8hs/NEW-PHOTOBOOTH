@@ -12,7 +12,8 @@ const CameraView = forwardRef(({ currentFilter, cameraSettings, onCapture }, ref
   const [flashEffect, setFlashEffect] = useState(false);
 
   useImperativeHandle(ref, () => ({
-    capturePhoto
+    capturePhoto,
+    switchCamera
   }));
 
   const initializeCamera = async (deviceId = null) => {
@@ -87,28 +88,34 @@ const CameraView = forwardRef(({ currentFilter, cameraSettings, onCapture }, ref
     canvas.width = video.videoWidth;
     canvas.height = video.videoHeight;
 
-    // Apply camera settings transformations
+    // Save the context state
     ctx.save();
     
-    // Apply zoom
+    // Apply camera settings transformations
     const zoom = cameraSettings.zoom;
-    const offsetX = (canvas.width * (zoom - 1)) / 2;
-    const offsetY = (canvas.height * (zoom - 1)) / 2;
+    const exposure = cameraSettings.exposure;
     
-    ctx.scale(zoom, zoom);
-    ctx.translate(-offsetX / zoom, -offsetY / zoom);
+    // Apply zoom (scale and translate to keep center)
+    if (zoom > 1) {
+      const scale = zoom;
+      const offsetX = (canvas.width * (scale - 1)) / 2;
+      const offsetY = (canvas.height * (scale - 1)) / 2;
+      
+      ctx.scale(scale, scale);
+      ctx.translate(-offsetX / scale, -offsetY / scale);
+    }
 
     // Apply exposure (brightness adjustment)
-    const exposure = cameraSettings.exposure;
-    const brightness = 1 + (exposure * 0.2); // -2 to +2 EV becomes 0.6 to 1.4 brightness
+    const brightness = 1 + (exposure * 0.3); // -2 to +2 EV becomes 0.4 to 1.6 brightness
     ctx.filter = `brightness(${brightness})`;
 
     // Draw video frame
     ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
     
+    // Restore context state
     ctx.restore();
 
-    // Apply filter effects
+    // Apply additional filter effects
     applyFilterToCanvas(ctx, canvas.width, canvas.height, currentFilter);
 
     // Convert to image data
@@ -124,7 +131,7 @@ const CameraView = forwardRef(({ currentFilter, cameraSettings, onCapture }, ref
   const applyFilterToCanvas = (ctx, width, height, filter) => {
     if (!filter || filter.id === 'original') return;
 
-    // Apply CSS filter equivalent using canvas
+    // Get image data for pixel manipulation
     const imageData = ctx.getImageData(0, 0, width, height);
     const data = imageData.data;
 
@@ -146,6 +153,7 @@ const CameraView = forwardRef(({ currentFilter, cameraSettings, onCapture }, ref
         break;
     }
 
+    // Put the modified image data back
     ctx.putImageData(imageData, 0, 0);
   };
 
@@ -268,7 +276,7 @@ const CameraView = forwardRef(({ currentFilter, cameraSettings, onCapture }, ref
       let b = data[i + 2];
 
       switch (filter.id) {
-        case 'coquette':
+        case 'coquette-pink':
           // Soft pink tones
           r = Math.min(255, r * 1.1 + 15);
           g = Math.min(255, g * 1.0 + 5);
@@ -295,23 +303,46 @@ const CameraView = forwardRef(({ currentFilter, cameraSettings, onCapture }, ref
     }
   };
 
+  // Apply real-time settings to video element
+  useEffect(() => {
+    if (videoRef.current) {
+      const video = videoRef.current;
+      const zoom = cameraSettings.zoom;
+      const exposure = cameraSettings.exposure;
+      
+      // Apply zoom transform
+      video.style.transform = zoom > 1 ? `scale(${zoom})` : 'scale(1)';
+      
+      // Apply exposure as brightness filter
+      const brightness = 1 + (exposure * 0.3);
+      const filterStr = currentFilter && currentFilter.cssFilter ? 
+        `${currentFilter.cssFilter} brightness(${brightness})` : 
+        `brightness(${brightness})`;
+      
+      video.style.filter = filterStr;
+    }
+  }, [cameraSettings, currentFilter]);
+
   useEffect(() => {
     initializeCamera();
+
+    // Handle keyboard shortcuts
+    const handleKeyPress = (e) => {
+      if (e.code === 'Space') {
+        e.preventDefault();
+        capturePhoto();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyPress);
 
     return () => {
       if (streamRef.current) {
         streamRef.current.getTracks().forEach(track => track.stop());
       }
+      window.removeEventListener('keydown', handleKeyPress);
     };
   }, []);
-
-  const getFilterStyle = () => {
-    if (!currentFilter || currentFilter.id === 'original') return {};
-    
-    return {
-      filter: currentFilter.cssFilter || 'none'
-    };
-  };
 
   return (
     <div className="camera-view">
@@ -319,15 +350,15 @@ const CameraView = forwardRef(({ currentFilter, cameraSettings, onCapture }, ref
         {isLoading && (
           <div className="camera-loading">
             <div className="loading-spinner"></div>
-            <p>Accessing camera...</p>
+            <p className="loading-text">Accessing camera...</p>
           </div>
         )}
         
         {error && (
           <div className="camera-error">
             <div className="error-icon">📷</div>
-            <p>{error}</p>
-            <button onClick={() => initializeCamera()} className="retry-btn">
+            <p className="error-message">{error}</p>
+            <button onClick={() => initializeCamera()} className="retry-button">
               Retry
             </button>
           </div>
@@ -339,19 +370,17 @@ const CameraView = forwardRef(({ currentFilter, cameraSettings, onCapture }, ref
           playsInline
           muted
           className="camera-video"
-          style={getFilterStyle()}
         />
 
         <canvas
           ref={canvasRef}
           className="capture-canvas"
-          style={{ display: 'none' }}
         />
 
         {/* Camera switch button */}
-        {devices.length > 1 && (
+        {devices.length > 1 && !isLoading && !error && (
           <button 
-            className="camera-switch-btn glass-btn"
+            className="camera-switch-btn"
             onClick={switchCamera}
             title="Switch Camera"
           >
@@ -363,26 +392,25 @@ const CameraView = forwardRef(({ currentFilter, cameraSettings, onCapture }, ref
         {flashEffect && <div className="flash-overlay"></div>}
 
         {/* Filter name overlay */}
-        <div className="filter-name-overlay">
-          <div className="glass-panel">
-            <span>{currentFilter.name}</span>
+        {!isLoading && !error && (
+          <div className="camera-overlay">
+            <div className="current-filter-indicator">
+              {currentFilter.icon} {currentFilter.name}
+            </div>
+            
+            <div className="camera-settings-overlay">
+              <div className="setting-badge">
+                Zoom: {cameraSettings.zoom.toFixed(1)}x
+              </div>
+              <div className="setting-badge">
+                EV: {cameraSettings.exposure > 0 ? '+' : ''}{cameraSettings.exposure.toFixed(1)}
+              </div>
+              <div className="setting-badge">
+                Focus: {cameraSettings.focusMode}
+              </div>
+            </div>
           </div>
-        </div>
-
-        {/* Camera settings display */}
-        <div className="camera-settings-display">
-          <div className="glass-panel">
-            <div className="setting-item">
-              <span>Zoom: {cameraSettings.zoom.toFixed(1)}x</span>
-            </div>
-            <div className="setting-item">
-              <span>EV: {cameraSettings.exposure > 0 ? '+' : ''}{cameraSettings.exposure.toFixed(1)}</span>
-            </div>
-            <div className="setting-item">
-              <span>Focus: {cameraSettings.focusMode}</span>
-            </div>
-          </div>
-        </div>
+        )}
       </div>
     </div>
   );
