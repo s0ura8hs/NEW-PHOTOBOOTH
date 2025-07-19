@@ -3,7 +3,7 @@ import CameraView from './CameraView';
 import FilterWheel from './FilterWheel';
 import TemplateSelector from './TemplateSelector';
 import PhotoGallery from './PhotoGallery';
-import CameraControls from './CameraControls';
+import CustomTemplateCreator from './CustomTemplateCreator';
 import { filters } from '../data/filters';
 import { templates } from '../data/templates';
 import './PhotoboothApp.css';
@@ -12,9 +12,11 @@ const PhotoboothApp = () => {
   const [currentFilter, setCurrentFilter] = useState(filters[0]);
   const [currentTemplate, setCurrentTemplate] = useState(templates[0]);
   const [capturedPhotos, setCapturedPhotos] = useState([]);
+  const [customTemplates, setCustomTemplates] = useState([]);
   const [showTemplateSelector, setShowTemplateSelector] = useState(false);
   const [showGallery, setShowGallery] = useState(false);
   const [showFilterWheel, setShowFilterWheel] = useState(false);
+  const [showCustomCreator, setShowCustomCreator] = useState(false);
   const [activeCategory, setActiveCategory] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
   const [cameraSettings, setCameraSettings] = useState({
@@ -60,6 +62,20 @@ const PhotoboothApp = () => {
     }));
   };
 
+  const handleSaveCustomTemplate = (template) => {
+    const newCustomTemplates = [...customTemplates, template];
+    setCustomTemplates(newCustomTemplates);
+    
+    // Save to localStorage
+    localStorage.setItem('custom-templates', JSON.stringify(newCustomTemplates));
+    
+    // Set as current template
+    setCurrentTemplate(template);
+    setShowCustomCreator(false);
+    
+    alert('Custom template saved successfully!');
+  };
+
   const getFilteredFilters = () => {
     let filtered = filters;
     
@@ -77,6 +93,10 @@ const PhotoboothApp = () => {
     return filtered;
   };
 
+  const getAllTemplates = () => {
+    return [...templates, ...customTemplates];
+  };
+
   const categories = [
     { id: 'all', name: 'All Filters' },
     { id: 'vintage', name: 'Vintage' },
@@ -89,6 +109,57 @@ const PhotoboothApp = () => {
     // Load saved photos
     const savedPhotos = JSON.parse(localStorage.getItem('photobooth-photos') || '[]');
     setCapturedPhotos(savedPhotos);
+    
+    // Load custom templates
+    const savedCustomTemplates = JSON.parse(localStorage.getItem('custom-templates') || '[]');
+    setCustomTemplates(savedCustomTemplates);
+  }, []);
+
+  // Handle keyboard shortcuts
+  useEffect(() => {
+    const handleKeyPress = (e) => {
+      // Don't trigger when typing in inputs
+      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+      
+      switch (e.key) {
+        case ' ':
+          e.preventDefault();
+          cameraRef.current?.capturePhoto();
+          break;
+        case 'f':
+        case 'F':
+          setShowFilterWheel(true);
+          break;
+        case 't':
+        case 'T':
+          setShowTemplateSelector(true);
+          break;
+        case 'g':
+        case 'G':
+          setShowGallery(true);
+          break;
+        case 'c':
+        case 'C':
+          setShowCustomCreator(true);
+          break;
+        case 'r':
+        case 'R':
+          const randomFilter = filters[Math.floor(Math.random() * filters.length)];
+          handleFilterChange(randomFilter);
+          break;
+        case 'Escape':
+          setShowFilterWheel(false);
+          setShowTemplateSelector(false);
+          setShowGallery(false);
+          setShowCustomCreator(false);
+          break;
+        default:
+          break;
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyPress);
+    return () => window.removeEventListener('keydown', handleKeyPress);
   }, []);
 
   return (
@@ -101,12 +172,14 @@ const PhotoboothApp = () => {
             <button 
               className="header-btn secondary"
               onClick={() => setShowFilterWheel(!showFilterWheel)}
+              title="Filter Wheel (F)"
             >
               {showFilterWheel ? 'Hide' : 'Show'} Filter Wheel
             </button>
             <button 
               className="header-btn"
               onClick={() => setShowGallery(true)}
+              title="Gallery (G)"
             >
               Gallery ({capturedPhotos.length})
             </button>
@@ -169,24 +242,6 @@ const PhotoboothApp = () => {
             cameraSettings={cameraSettings}
             onCapture={handleCapturePhoto}
           />
-          
-          <div className="camera-overlay">
-            <div className="current-filter-indicator">
-              {currentFilter.icon} {currentFilter.name}
-            </div>
-            
-            <div className="camera-settings-overlay">
-              <div className="setting-badge">
-                Zoom: {cameraSettings.zoom.toFixed(1)}x
-              </div>
-              <div className="setting-badge">
-                EV: {cameraSettings.exposure > 0 ? '+' : ''}{cameraSettings.exposure.toFixed(1)}
-              </div>
-              <div className="setting-badge">
-                Focus: {cameraSettings.focusMode}
-              </div>
-            </div>
-          </div>
         </div>
 
         {/* Right Sidebar - Camera Controls */}
@@ -290,8 +345,10 @@ const PhotoboothApp = () => {
             <div 
               className="template-preview-mini"
               onClick={() => setShowTemplateSelector(true)}
+              title="Templates (T)"
             >
               {currentTemplate.name}
+              {currentTemplate.isCustom && <span> (Custom)</span>}
             </div>
           </div>
 
@@ -314,8 +371,15 @@ const PhotoboothApp = () => {
                   const randomFilter = filters[Math.floor(Math.random() * filters.length)];
                   handleFilterChange(randomFilter);
                 }}
+                title="Random Filter (R)"
               >
                 Random Filter
+              </button>
+              <button 
+                className="control-btn"
+                onClick={() => cameraRef.current?.switchCamera()}
+              >
+                Switch Camera
               </button>
             </div>
           </div>
@@ -340,28 +404,25 @@ const PhotoboothApp = () => {
             <button 
               className="action-btn secondary"
               onClick={() => setShowTemplateSelector(true)}
+              title="Templates (T)"
             >
               Templates
             </button>
             <button 
+              className="action-btn custom-template"
+              onClick={() => setShowCustomCreator(true)}
+              title="Custom Template Creator (C)"
+            >
+              Create Template
+            </button>
+            <button 
               className="action-btn"
               onClick={() => setShowGallery(true)}
+              title="Gallery (G)"
             >
               View Gallery
             </button>
           </div>
-        </div>
-
-        {/* Mobile Controls - Hidden on Desktop */}
-        <div className="mobile-controls">
-          <CameraControls
-            settings={cameraSettings}
-            onChange={handleCameraSettingChange}
-            onCapture={() => cameraRef.current?.capturePhoto()}
-            onTemplateSelect={() => setShowTemplateSelector(true)}
-            onGalleryOpen={() => setShowGallery(true)}
-            photoCount={capturedPhotos.length}
-          />
         </div>
       </div>
 
@@ -378,11 +439,20 @@ const PhotoboothApp = () => {
       {/* Template Selector Modal */}
       {showTemplateSelector && (
         <TemplateSelector
-          templates={templates}
+          templates={getAllTemplates()}
           currentTemplate={currentTemplate}
           onTemplateSelect={handleTemplateChange}
           onClose={() => setShowTemplateSelector(false)}
           capturedPhotos={capturedPhotos}
+        />
+      )}
+
+      {/* Custom Template Creator Modal */}
+      {showCustomCreator && (
+        <CustomTemplateCreator
+          capturedPhotos={capturedPhotos}
+          onSave={handleSaveCustomTemplate}
+          onClose={() => setShowCustomCreator(false)}
         />
       )}
 
