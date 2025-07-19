@@ -1,0 +1,690 @@
+/* Camera Controls Styles */
+.camera-controls {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 50;
+  transition: opacity 0.3s ease;
+}
+
+.camera-controls.hidden {
+  opacity: 0.3;
+}
+
+.camera-controls.visible {
+  opacity: 1;
+}
+
+.camera-controls > * {
+  pointer-events: all;
+}
+
+/* Controls Toggle */
+.controls-toggle {
+  position: absolute;
+  top: 50%;
+  right: 20px;
+  transform: translateY(-50%);
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  z-index: 60;
+}
+
+/* Control Rows */
+.control-row {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.top-row {
+  top: 30px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.bottom-row {
+  bottom: 150px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+/* Control Groups */
+.control-group {
+  position: relative;
+}
+
+.control-group.active .glass-panel {
+  background: rgba(255, 255, 255, 0.25);
+  border-color: rgba(255, 255, 255, 0.4);
+  box-shadow: 
+    0 8px 32px rgba(0, 0, 0, 0.3),
+    0 0 20px rgba(255, 255, 255, 0.2);
+}
+
+/* Zoom Controls */
+.zoom-control .glass-panel {
+  min-width: 200px;
+  padding: 15px;
+}
+
+.control-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.control-icon {
+  font-size: 18px;
+}
+
+.control-label {
+  color: white;
+  font-weight: 600;
+  font-size: 14px;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+.control-value {
+  color: white;
+  font-weight: 700;
+  font-size: 14px;
+  background: rgba(255, 255, 255, 0.2);
+  padding: 2px 8px;
+  border-radius: 10px;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+/* Zoom Slider */
+.zoom-slider-container {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.zoom-btn {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.zoom-btn:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.3);
+  transform: scale(1.1);
+}
+
+.zoom-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.zoom-slider {
+  flex: 1;
+  height: 6px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 3px;
+  outline: none;
+  -webkit-appearance: none;
+  cursor: pointer;
+}
+
+.zoom-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: white;
+  border: 2px solid #4169E1;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  transition: all 0.2s ease;
+}
+
+.zoom-slider::-webkit-slider-thumb:hover {
+  transform: scale(1.2);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+.zoom-slider::-moz-range-thumb {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: white;
+  border: 2px solid #4169E1;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+/* Zoom Presets */
+.zoom-presets {
+  display: flex;
+  gap: 5px;
+}
+
+.preset-btn {
+  padding: 4px 8px;
+  background: rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 12px;
+  color: white;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.preset-btn:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.preset-btn.active {
+  background: #4169E1;
+  border-color: #4169E1;
+  box-shadow: 0 2px 8px rgba(65, 105, 225, 0.4);
+}
+
+/* Right Panel - Exposure */
+.right-panel {
+  position: absolute;
+  top: 50%;
+  right: 80px;
+  transform: translateY(-50%);
+  height: 300px;
+}
+
+.glass-panel.vertical {
+  padding: 20px 15px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.control-header.vertical {
+  flex-direction: column;
+  text-align: center;
+  margin-bottom: 20px;
+  gap: 5px;
+}
+
+.control-header.vertical .control-icon {
+  font-size: 24px;
+}
+
+.control-header.vertical .control-label {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.control-header.vertical .control-value {
+  font-size: 12px;
+  padding: 2px 6px;
+}
+
+/* Exposure Slider */
+.exposure-slider-container {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.exposure-scale {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  align-items: center;
+}
+
+.scale-mark {
+  color: white;
+  font-size: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 4px 6px;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+  min-width: 20px;
+  text-align: center;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+.scale-mark:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.scale-mark.active {
+  background: #FFD700;
+  color: #000;
+  text-shadow: none;
+}
+
+.vertical-slider {
+  writing-mode: bt-lr; /* IE */
+  -webkit-appearance: slider-vertical; /* WebKit */
+  width: 6px;
+  height: 150px;
+  background: rgba(255, 255, 255, 0.2);
+  outline: none;
+  cursor: pointer;
+}
+
+.exposure-indicators {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: center;
+}
+
+.indicator {
+  font-size: 16px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+}
+
+.indicator.warning {
+  animation: warningPulse 1s ease-in-out infinite;
+}
+
+@keyframes warningPulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+/* Focus Controls */
+.focus-control .glass-panel {
+  min-width: 180px;
+  padding: 15px;
+}
+
+.focus-mode-btn {
+  background: rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 15px;
+  color: white;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 4px 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.focus-mode-btn.active {
+  background: #9370DB;
+  border-color: #9370DB;
+  box-shadow: 0 2px 8px rgba(147, 112, 219, 0.4);
+}
+
+.focus-slider-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 10px 0;
+}
+
+.focus-label {
+  color: white;
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  opacity: 0.8;
+}
+
+.focus-slider {
+  flex: 1;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 2px;
+  outline: none;
+  -webkit-appearance: none;
+  cursor: pointer;
+}
+
+.focus-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: white;
+  border: 2px solid #9370DB;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+}
+
+.focus-distance {
+  text-align: center;
+  color: white;
+  font-size: 12px;
+  font-weight: 600;
+  background: rgba(255, 255, 255, 0.1);
+  padding: 4px 8px;
+  border-radius: 10px;
+}
+
+/* Capture Button */
+.capture-group {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.capture-btn {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.2);
+  border: 3px solid rgba(255, 255, 255, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.capture-btn:hover {
+  transform: scale(1.1);
+  background: rgba(255, 255, 255, 0.3);
+  border-color: rgba(255, 255, 255, 0.6);
+  box-shadow: 
+    0 8px 25px rgba(0, 0, 0, 0.3),
+    0 0 20px rgba(255, 255, 255, 0.2);
+}
+
+.capture-btn:active {
+  transform: scale(0.95);
+}
+
+.capture-ring {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  border: 2px solid white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.capture-inner {
+  width: 45px;
+  height: 45px;
+  border-radius: 50%;
+  background: white;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* Secondary Controls */
+.secondary-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.template-btn,
+.gallery-btn {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  font-size: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.photo-count {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  background: #ff4757;
+  color: white;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  font-size: 10px;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid white;
+}
+
+/* Quick Actions */
+.quick-actions {
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.quick-actions .glass-panel {
+  padding: 10px 20px;
+}
+
+.action-hints {
+  display: flex;
+  gap: 20px;
+  color: white;
+  font-size: 12px;
+  opacity: 0.8;
+}
+
+.action-hints span {
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+  .controls-toggle {
+    right: 15px;
+    width: 45px;
+    height: 45px;
+    font-size: 18px;
+  }
+  
+  .top-row,
+  .bottom-row {
+    gap: 15px;
+  }
+  
+  .bottom-row {
+    bottom: 120px;
+  }
+  
+  .zoom-control .glass-panel {
+    min-width: 160px;
+    padding: 12px;
+  }
+  
+  .right-panel {
+    right: 70px;
+    height: 250px;
+  }
+  
+  .focus-control .glass-panel {
+    min-width: 140px;
+    padding: 12px;
+  }
+  
+  .capture-btn {
+    width: 70px;
+    height: 70px;
+  }
+  
+  .capture-ring {
+    width: 50px;
+    height: 50px;
+  }
+  
+  .capture-inner {
+    width: 35px;
+    height: 35px;
+  }
+  
+  .template-btn,
+  .gallery-btn {
+    width: 45px;
+    height: 45px;
+    font-size: 18px;
+  }
+  
+  .quick-actions {
+    bottom: 15px;
+  }
+  
+  .action-hints {
+    gap: 15px;
+    font-size: 11px;
+  }
+}
+
+@media (max-width: 480px) {
+  .top-row,
+  .bottom-row {
+    gap: 10px;
+  }
+  
+  .bottom-row {
+    bottom: 100px;
+  }
+  
+  .zoom-control .glass-panel {
+    min-width: 120px;
+    padding: 10px;
+  }
+  
+  .control-header {
+    margin-bottom: 8px;
+  }
+  
+  .control-icon {
+    font-size: 16px;
+  }
+  
+  .control-label {
+    font-size: 12px;
+  }
+  
+  .control-value {
+    font-size: 12px;
+    padding: 1px 6px;
+  }
+  
+  .right-panel {
+    right: 60px;
+    height: 200px;
+  }
+  
+  .glass-panel.vertical {
+    padding: 15px 10px;
+  }
+  
+  .exposure-scale {
+    gap: 15px;
+  }
+  
+  .vertical-slider {
+    height: 120px;
+  }
+  
+  .focus-control .glass-panel {
+    min-width: 100px;
+    padding: 10px;
+  }
+  
+  .capture-btn {
+    width: 60px;
+    height: 60px;
+  }
+  
+  .capture-ring {
+    width: 40px;
+    height: 40px;
+  }
+  
+  .capture-inner {
+    width: 28px;
+    height: 28px;
+  }
+  
+  .template-btn,
+  .gallery-btn {
+    width: 40px;
+    height: 40px;
+    font-size: 16px;
+  }
+  
+  .photo-count {
+    width: 18px;
+    height: 18px;
+    font-size: 9px;
+  }
+  
+  .action-hints {
+    gap: 10px;
+    font-size: 10px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+}
+
+/* Camera Switch & Settings Integration */
+.camera-switch,
+.settings {
+  display: flex;
+  align-items: center;
+}
+
+.camera-switch-btn,
+.settings-btn {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  font-size: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.settings-btn:hover {
+  transform: rotate(90deg);
+}
+
+/* Focus on active controls */
+.control-group:focus-within .glass-panel {
+  background: rgba(255, 255, 255, 0.25);
+  border-color: rgba(255, 255, 255, 0.4);
+}
+
+/* Keyboard shortcuts indicator */
+.keyboard-handler {
+  position: fixed;
+  top: -1000px;
+  left: -1000px;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
