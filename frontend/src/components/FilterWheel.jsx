@@ -1,25 +1,20 @@
 import React, { useState, useRef, useEffect } from 'react';
 import './FilterWheel.css';
 
-const FilterWheel = ({ filters, currentFilter, onFilterChange }) => {
+const FilterWheel = ({ filters, currentFilter, onFilterChange, onClose }) => {
   const [rotation, setRotation] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
   const [lastAngle, setLastAngle] = useState(0);
-  const [momentum, setMomentum] = useState(0);
   const [searchTerm, setSearchTerm] = useState('');
-  const [isSearching, setIsSearching] = useState(false);
+  const [showGrid, setShowGrid] = useState(false);
   const wheelRef = useRef(null);
-  const animationRef = useRef(null);
 
   const totalFilters = filters.length;
   const anglePerFilter = 360 / totalFilters;
 
-  // Find current filter index
-  const currentIndex = filters.findIndex(filter => filter.id === currentFilter.id);
-
   const getFilterPosition = (index) => {
     const angle = (index * anglePerFilter) + rotation;
-    const radius = 200; // Wheel radius
+    const radius = 200; // Distance from center
     const x = Math.cos((angle - 90) * Math.PI / 180) * radius;
     const y = Math.sin((angle - 90) * Math.PI / 180) * radius;
     return { x, y, angle };
@@ -44,10 +39,6 @@ const FilterWheel = ({ filters, currentFilter, onFilterChange }) => {
   const handleStart = (e) => {
     setIsDragging(true);
     setLastAngle(getAngleFromEvent(e));
-    setMomentum(0);
-    if (animationRef.current) {
-      cancelAnimationFrame(animationRef.current);
-    }
   };
 
   const handleMove = (e) => {
@@ -61,30 +52,12 @@ const FilterWheel = ({ filters, currentFilter, onFilterChange }) => {
     if (angleDiff < -180) angleDiff += 360;
     
     setRotation(prev => prev + angleDiff);
-    setMomentum(angleDiff);
     setLastAngle(currentAngle);
   };
 
   const handleEnd = () => {
     setIsDragging(false);
-    
-    // Apply momentum and snap to nearest filter
-    const applyMomentum = () => {
-      if (Math.abs(momentum) < 0.1) {
-        snapToNearestFilter();
-        return;
-      }
-      
-      setRotation(prev => prev + momentum);
-      setMomentum(prev => prev * 0.95); // Friction
-      animationRef.current = requestAnimationFrame(applyMomentum);
-    };
-    
-    if (Math.abs(momentum) > 1) {
-      applyMomentum();
-    } else {
-      snapToNearestFilter();
-    }
+    snapToNearestFilter();
   };
 
   const snapToNearestFilter = () => {
@@ -92,241 +65,169 @@ const FilterWheel = ({ filters, currentFilter, onFilterChange }) => {
     const nearestFilterIndex = Math.round(normalizedRotation / anglePerFilter) % totalFilters;
     const targetRotation = nearestFilterIndex * anglePerFilter;
     
-    // Smooth animation to target
-    const startRotation = rotation;
-    const startTime = Date.now();
-    const duration = 300;
+    setRotation(targetRotation);
     
-    const animate = () => {
-      const elapsed = Date.now() - startTime;
-      const progress = Math.min(elapsed / duration, 1);
-      const easeProgress = 1 - Math.pow(1 - progress, 3); // Ease out cubic
-      
-      const newRotation = startRotation + (targetRotation - startRotation) * easeProgress;
-      setRotation(newRotation);
-      
-      if (progress < 1) {
-        animationRef.current = requestAnimationFrame(animate);
-      } else {
-        // Trigger filter change
-        const selectedFilter = filters[nearestFilterIndex];
-        if (selectedFilter && selectedFilter.id !== currentFilter.id) {
-          onFilterChange(selectedFilter);
-        }
-      }
-    };
-    
-    animate();
+    const selectedFilter = filters[nearestFilterIndex];
+    if (selectedFilter && selectedFilter.id !== currentFilter.id) {
+      onFilterChange(selectedFilter);
+    }
   };
 
-  const handleSearch = (term) => {
-    setSearchTerm(term);
-    if (!term) {
-      setIsSearching(false);
-      return;
-    }
+  const rotateToFilter = (filterIndex) => {
+    const targetRotation = filterIndex * anglePerFilter;
+    setRotation(targetRotation);
+    onFilterChange(filters[filterIndex]);
+  };
+
+  const spinWheel = () => {
+    const randomSpins = 3 + Math.random() * 3; // 3-6 full rotations
+    const randomFilter = Math.floor(Math.random() * totalFilters);
+    const targetRotation = (randomSpins * 360) + (randomFilter * anglePerFilter);
     
-    setIsSearching(true);
-    const matchingFilter = filters.find(filter => 
-      filter.name.toLowerCase().includes(term.toLowerCase()) ||
-      filter.category.toLowerCase().includes(term.toLowerCase())
+    setRotation(targetRotation);
+    
+    setTimeout(() => {
+      onFilterChange(filters[randomFilter]);
+    }, 800);
+  };
+
+  const getFilteredFilters = () => {
+    if (!searchTerm) return filters;
+    
+    return filters.filter(filter =>
+      filter.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      filter.category.toLowerCase().includes(searchTerm.toLowerCase())
     );
-    
-    if (matchingFilter) {
-      const targetIndex = filters.findIndex(filter => filter.id === matchingFilter.id);
-      const targetRotation = targetIndex * anglePerFilter;
-      
-      // Animate to matching filter
-      const startRotation = rotation;
-      const startTime = Date.now();
-      const duration = 500;
-      
-      const animate = () => {
-        const elapsed = Date.now() - startTime;
-        const progress = Math.min(elapsed / duration, 1);
-        const easeProgress = 1 - Math.pow(1 - progress, 3);
-        
-        const newRotation = startRotation + (targetRotation - startRotation) * easeProgress;
-        setRotation(newRotation);
-        
-        if (progress < 1) {
-          animationRef.current = requestAnimationFrame(animate);
-        } else {
-          onFilterChange(matchingFilter);
-          setIsSearching(false);
-        }
-      };
-      
-      animate();
-    }
   };
 
-  const handleKeyNavigation = (e) => {
-    if (e.key === 'ArrowLeft') {
-      const newIndex = (currentIndex - 1 + totalFilters) % totalFilters;
-      onFilterChange(filters[newIndex]);
-      setRotation(newIndex * anglePerFilter);
-    } else if (e.key === 'ArrowRight') {
-      const newIndex = (currentIndex + 1) % totalFilters;
-      onFilterChange(filters[newIndex]);
-      setRotation(newIndex * anglePerFilter);
-    } else if (e.key === 'r' || e.key === 'R') {
-      // Random filter
-      const randomIndex = Math.floor(Math.random() * totalFilters);
-      onFilterChange(filters[randomIndex]);
-      setRotation(randomIndex * anglePerFilter);
-    }
-  };
-
-  useEffect(() => {
-    window.addEventListener('keydown', handleKeyNavigation);
-    return () => window.removeEventListener('keydown', handleKeyNavigation);
-  }, [currentIndex, totalFilters]);
-
-  // Auto-rotation when idle
-  useEffect(() => {
-    if (isDragging || isSearching) return;
-    
-    const autoRotate = () => {
-      setRotation(prev => prev + 0.1); // Slow auto-rotation
-      setTimeout(autoRotate, 100);
-    };
-    
-    const timeout = setTimeout(autoRotate, 2000); // Start after 2 seconds of idle
-    return () => clearTimeout(timeout);
-  }, [isDragging, isSearching, rotation]);
+  const currentIndex = filters.findIndex(filter => filter.id === currentFilter.id);
 
   return (
-    <div className="filter-wheel-container">
-      {/* Search Interface */}
-      <div className="filter-search">
-        <div className="glass-panel">
+    <div className="filter-wheel-modal" onClick={onClose}>
+      <div className="filter-wheel-content" onClick={(e) => e.stopPropagation()}>
+        <div className="filter-wheel-header">
+          <h2 className="filter-wheel-title">Filter Wheel</h2>
+          <button className="close-wheel-btn" onClick={onClose}>
+            ✕
+          </button>
+        </div>
+
+        {/* Search */}
+        <div className="wheel-search">
           <input
             type="text"
             placeholder="Search filters..."
             value={searchTerm}
-            onChange={(e) => handleSearch(e.target.value)}
-            className="search-input"
+            onChange={(e) => setSearchTerm(e.target.value)}
           />
-          <div className="search-icon">🔍</div>
         </div>
-      </div>
 
-      {/* Filter Wheel */}
-      <div 
-        className="filter-wheel"
-        ref={wheelRef}
-        onMouseDown={handleStart}
-        onMouseMove={handleMove}
-        onMouseUp={handleEnd}
-        onMouseLeave={handleEnd}
-        onTouchStart={handleStart}
-        onTouchMove={handleMove}
-        onTouchEnd={handleEnd}
-      >
-        <div className="wheel-center">
-          <div className="center-indicator">
-            <div className="current-filter-name">
-              {currentFilter.name}
+        {/* Wheel Controls */}
+        <div className="wheel-controls">
+          <button className="wheel-control-btn" onClick={spinWheel}>
+            🎲 Random Spin
+          </button>
+          <button 
+            className={`wheel-control-btn ${showGrid ? 'secondary' : ''}`}
+            onClick={() => setShowGrid(!showGrid)}
+          >
+            {showGrid ? '🎡 Wheel View' : '🔲 Grid View'}
+          </button>
+          <button className="wheel-control-btn secondary" onClick={onClose}>
+            ✓ Apply Filter
+          </button>
+        </div>
+
+        {!showGrid ? (
+          /* Circular Wheel View */
+          <div className="circular-wheel-container">
+            <div 
+              className="circular-wheel"
+              ref={wheelRef}
+              style={{ transform: `rotate(${rotation}deg)` }}
+              onMouseDown={handleStart}
+              onMouseMove={handleMove}
+              onMouseUp={handleEnd}
+              onMouseLeave={handleEnd}
+              onTouchStart={handleStart}
+              onTouchMove={handleMove}
+              onTouchEnd={handleEnd}
+            >
+              {filters.map((filter, index) => {
+                const position = getFilterPosition(index);
+                const isActive = filter.id === currentFilter.id;
+                
+                return (
+                  <div
+                    key={filter.id}
+                    className={`wheel-filter-item ${isActive ? 'active' : ''}`}
+                    style={{
+                      transform: `translate(${position.x}px, ${position.y}px) rotate(${-rotation}deg)`,
+                      left: '50%',
+                      top: '50%',
+                      marginLeft: '-30px',
+                      marginTop: '-30px'
+                    }}
+                    onClick={() => rotateToFilter(index)}
+                  >
+                    <div className="wheel-filter-icon">{filter.icon}</div>
+                    <div className="wheel-filter-name">{filter.name}</div>
+                  </div>
+                );
+              })}
             </div>
-            <div className="filter-category">
-              {currentFilter.category}
+
+            {/* Center Display */}
+            <div className="wheel-center">
+              <div className="current-filter-display">
+                <div className="current-filter-icon">{currentFilter.icon}</div>
+                <div className="current-filter-text">{currentFilter.name}</div>
+                <div className="current-filter-category">{currentFilter.category}</div>
+              </div>
+            </div>
+
+            {/* Category Indicators */}
+            <div className="category-indicators">
+              {['vintage', 'digital', 'artistic', 'modern'].map((category, index) => (
+                <div
+                  key={category}
+                  className={`category-indicator ${category}`}
+                  style={{
+                    position: 'absolute',
+                    top: '50%',
+                    left: '50%',
+                    transform: `translate(-50%, -50%) rotate(${index * 90}deg) translateY(-225px) rotate(${-index * 90}deg)`
+                  }}
+                >
+                  {category}
+                </div>
+              ))}
             </div>
           </div>
-        </div>
-
-        {filters.map((filter, index) => {
-          const position = getFilterPosition(index);
-          const isActive = filter.id === currentFilter.id;
-          const distanceFromActive = Math.abs(((index - currentIndex + totalFilters) % totalFilters));
-          const scale = isActive ? 1.5 : Math.max(0.6, 1 - (distanceFromActive / totalFilters) * 0.8);
-          const opacity = isActive ? 1 : Math.max(0.4, 1 - (distanceFromActive / totalFilters) * 0.6);
-
-          return (
-            <div
-              key={filter.id}
-              className={`filter-item ${isActive ? 'active' : ''}`}
-              style={{
-                transform: `translate(${position.x}px, ${position.y}px) scale(${scale})`,
-                opacity,
-                zIndex: isActive ? 1000 : 100 - distanceFromActive
-              }}
-              onClick={() => onFilterChange(filter)}
-            >
-              <div className="filter-preview" style={{ 
-                filter: filter.cssFilter,
-                backgroundImage: `url(data:image/svg+xml,${encodeURIComponent(`
-                  <svg width="60" height="60" xmlns="http://www.w3.org/2000/svg">
-                    <defs>
-                      <pattern id="checkerboard" x="0" y="0" width="10" height="10" patternUnits="userSpaceOnUse">
-                        <rect x="0" y="0" width="5" height="5" fill="#333"/>
-                        <rect x="5" y="5" width="5" height="5" fill="#333"/>
-                        <rect x="5" y="0" width="5" height="5" fill="#666"/>
-                        <rect x="0" y="5" width="5" height="5" fill="#666"/>
-                      </pattern>
-                    </defs>
-                    <rect width="60" height="60" fill="url(#checkerboard)"/>
-                  </svg>
-                `)})`
-              }}>
-                <div className="filter-icon">{filter.icon}</div>
-              </div>
-              {isActive && (
-                <div className="filter-name">{filter.name}</div>
-              )}
+        ) : (
+          /* Grid View */
+          <div className="filter-grid-view">
+            <h3 className="filter-grid-title">All Filters</h3>
+            <div className="filter-grid-container">
+              {getFilteredFilters().map((filter) => (
+                <div
+                  key={filter.id}
+                  className={`grid-filter-item ${currentFilter.id === filter.id ? 'active' : ''}`}
+                  onClick={() => onFilterChange(filter)}
+                >
+                  <div 
+                    className="grid-filter-preview"
+                    style={{ filter: filter.cssFilter }}
+                  >
+                    {filter.icon}
+                  </div>
+                  <div className="grid-filter-name">{filter.name}</div>
+                  <div className="grid-filter-category">{filter.category}</div>
+                </div>
+              ))}
             </div>
-          );
-        })}
-
-        {/* Particle trail effect */}
-        {isDragging && (
-          <div className="particle-trail" style={{
-            transform: `rotate(${rotation}deg)`
-          }}>
-            {[...Array(20)].map((_, i) => (
-              <div 
-                key={i} 
-                className="particle" 
-                style={{
-                  transform: `rotate(${i * 18}deg) translateY(-200px)`,
-                  animationDelay: `${i * 0.05}s`
-                }}
-              />
-            ))}
           </div>
         )}
-      </div>
-
-      {/* Navigation Hints */}
-      <div className="wheel-navigation-hints">
-        <div className="glass-panel">
-          <div className="hint">← → Arrow keys to navigate</div>
-          <div className="hint">Drag to spin • R for random</div>
-        </div>
-      </div>
-
-      {/* Category Sections */}
-      <div className="category-sections">
-        {['vintage', 'digital', 'artistic', 'modern'].map((category, index) => (
-          <div 
-            key={category}
-            className="category-section"
-            style={{ 
-              transform: `rotate(${index * 90}deg)`,
-              '--category-color': `var(--${category}-color)`
-            }}
-            onClick={() => {
-              const categoryFilter = filters.find(f => f.category === category);
-              if (categoryFilter) {
-                const targetIndex = filters.findIndex(f => f.id === categoryFilter.id);
-                setRotation(targetIndex * anglePerFilter);
-                onFilterChange(categoryFilter);
-              }
-            }}
-          >
-            <div className="category-label">{category.toUpperCase()}</div>
-          </div>
-        ))}
       </div>
     </div>
   );
